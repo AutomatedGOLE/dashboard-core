@@ -9,24 +9,24 @@ import os
 import sys
 import json
 import atexit
-import requests
+
 import socket
 import subprocess
 from time import sleep
 from threading import Thread
-import xml.etree.cElementTree as ET
-from collections import defaultdict
+
+
+import cpm
+import dpm
 
 topo_v2 = 'vnd.ogf.nsi.topology.v2+xml'
 nsa = 'vnd.ogf.nsi.nsa.v1+xml'
 
 
-
-
-
-
 # Main
 if __name__ == '__main__':
+
+    cpm.start_cpm()
 
 	# dds_url = "http://agg.netherlight.net/dds/documents"
 
