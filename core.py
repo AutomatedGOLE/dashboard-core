@@ -26,7 +26,8 @@ nsa = 'vnd.ogf.nsi.nsa.v1+xml'
 # Main
 if __name__ == '__main__':
 
-    cpm.start_cpm()
+     cpm.start_cpm()
+    #dpm.start_dpm()
 
 	# dds_url = "http://agg.netherlight.net/dds/documents"
 

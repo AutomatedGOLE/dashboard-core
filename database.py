@@ -22,10 +22,13 @@ def table_clear(tables, cursor):
         query = "TRUNCATE TABLE " + table
         cursor.execute(query)
 
+def add_peerswithmismatches(nsa1, nsa2, cursor):
+    query = "INSERT INTO peerswithmismatches (nsa1, nsa2) VALUES (\"" + nsa1 + "\", \"" + nsa2 + "\")"
+    cursor.execute(query)
+
 def add_peerswith(nsa1, nsa2, cursor):
     query = "INSERT INTO peerswith (nsa1, nsa2) VALUES (\"" + nsa1 + "\", \"" + nsa2 + "\")"
     cursor.execute(query)
-
 
 def add_nopeers(nsa, cursor):
     query = "INSERT INTO nopeers (nsa) VALUES (\"" + nsa + "\")"

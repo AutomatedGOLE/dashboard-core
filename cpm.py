@@ -18,9 +18,6 @@ nsa = 'vnd.ogf.nsi.nsa.v1+xml'
 def start_cpm():
     dds_url = "http://agg.netherlight.net/dds/documents"
 
-    domains_topology = []
-    domains_nsa = []
-
     req = requests.get(dds_url)
 
     dds_file = ET.XML(req.text)
@@ -33,7 +30,7 @@ def start_cpm():
     cursor =  db_connection.cursor()
 
     # Clean DB
-    db.table_clear(['peerswith', 'nopeers', 'unknownpeers'], cursor)
+    db.table_clear(['peerswithmismatches', 'peerswith', 'nopeers', 'unknownpeers'], cursor)
 
     cpmf.peersWithMismatches(cpmf.peersWith(domains_nsa), cursor)
     print '\n'

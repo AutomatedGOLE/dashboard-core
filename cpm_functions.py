@@ -32,6 +32,8 @@ def peersWithMismatches(domain_peers, cursor):
         for peer in peers:
             if not nsa in domain_peers[peer]:
                 print nsa + ' is peer with ' + peer + ', but the opposite does not happen'
+                db.add_peerswithmismatches(nsa, peer, cursor)
+            else:
                 db.add_peerswith(nsa, peer, cursor)
 
 
