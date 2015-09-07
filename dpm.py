@@ -8,6 +8,8 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 import requests
 import xml.etree.cElementTree as ET
 import general_functions as gf
+import dpm_functions as dpmf
+import database as db
 
 topo_v2 = 'vnd.ogf.nsi.topology.v2+xml'
 nsa = 'vnd.ogf.nsi.nsa.v1+xml'
@@ -28,3 +30,9 @@ def start_dpm():
 
     # Clean DB
     db.table_clear(['isalias'], cursor)
+
+    # Find isAlias mismatches
+    dpmf.isAlias(dpmf.getAlias(domains_topology), cursor)
+
+    # Commit changes and close connection
+    db.database_end(db_connection)
