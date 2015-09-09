@@ -40,3 +40,17 @@ def start_cpm():
 
     # Commit changes and close connection
     db.database_end(db_connection)
+
+
+    print "\n\n\n\n TESTING \n\n\n"
+
+    #TESTING
+    db_connection = db.database_start()
+    cursor =  db_connection.cursor()
+
+    query = "SELECT * FROM peerswith"
+    cursor.execute(query)
+    peerswith = cursor.fetchall()
+
+    for nsa1, nsa2 in peerswith:
+        print nsa1 + " " + nsa2

@@ -32,7 +32,7 @@ def getAlias(domains_topology):
         for relation in domain[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
 
             if relation[0].find('{http://schemas.ogf.org/nml/2013/05/base#}Relation') and str(relation[0][1].attrib).find('isAlias'):
-                alias.append([domainFromPort(relation[0].attrib['id']), relation[0].attrib['id'], domainFromPort(relation[0][1][0].attrib['id']), relation[0][1][0].attrib['id']])
+                alias.append([relation[0].attrib['id'], domainFromPort(relation[0][1][0].attrib['id']), relation[0][1][0].attrib['id']])
                 num_alias+=1
 
         # Add to structure
