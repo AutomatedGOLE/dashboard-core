@@ -32,25 +32,18 @@ def start_cpm():
     # Clean DB
     db.table_clear(['peerswithmismatches', 'peerswith', 'nopeers', 'unknownpeers'], cursor)
 
-    cpmf.peersWithMismatches(cpmf.peersWith(domains_nsa), cursor)
+    domain_peers = cpmf.peersWith(domains_nsa)
+
+    cpmf.peersWithMismatches(domain_peers, cursor)
     print '\n'
     cpmf.noPeersWith(domains_nsa, cursor)
     print '\n'
     cpmf.unknownPeersWidth(domains_nsa, cursor)
+    print '\n'
+    cpmf.notRef(domain_peers, cursor)
 
     # Commit changes and close connection
     db.database_end(db_connection)
 
 
     print "\n\n\n\n TESTING \n\n\n"
-
-    #TESTING
-    db_connection = db.database_start()
-    cursor =  db_connection.cursor()
-
-    query = "SELECT * FROM peerswith"
-    cursor.execute(query)
-    peerswith = cursor.fetchall()
-
-    for nsa1, nsa2 in peerswith:
-        print nsa1 + " " + nsa2

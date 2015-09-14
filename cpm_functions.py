@@ -30,7 +30,7 @@ def peersWithMismatches(domain_peers, cursor):
     for nsa, peers in domain_peers.items():
         # for each peer, check if the opposite is present
         for peer in peers:
-            if not nsa in domain_peers[peer]:
+            if not nsa not in domain_peers[peer]:
                 print nsa + ' is peer with ' + peer + ', but the opposite does not happen'
                 db.add_peerswithmismatches(nsa, peer, cursor)
             else:
@@ -47,6 +47,23 @@ def unknownPeersWidth(domains_nsa, cursor):
     for nsa, peers in peersWith(domains_nsa).items():
         # for each peer, check if it is a real domain
         for peer in peers:
-            if not peer in domain_names:
+            if peer not in domain_names:
                 print nsa + ' is peer with an unknown NSA: ' + peer
                 db.add_unknownpeer(nsa, peer, cursor)
+
+
+# Find NSAs not referenced by any peerswith
+def notRef(domain_peers, cursor):
+    peer_list = []
+    nsa_list = []
+
+    # Get lists of NSAs and Peers
+    for nsa, peers in domain_peers.items():
+        nsa_list.append(nsa)
+        for peer in peers:
+            peer_list.append(peer)
+
+    for nsa in nsa_list:
+        if nsa not in peer_list:
+            db.add_notref(nsa, cursor)
+            print str(nsa) + ' not referenced by any peerswith'
