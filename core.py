@@ -4,56 +4,52 @@
 # AutoGOLE Dashboard Core
 
 __author__ = 'Daniel Romão - d.f.romao@uva.nl'
-import io
-import os
-import sys
-import json
-import atexit
-
-import socket
-import subprocess
-from time import sleep
-from threading import Thread
-
 import cpm
 import dpm
-
-topo_v2 = 'vnd.ogf.nsi.topology.v2+xml'
-nsa = 'vnd.ogf.nsi.nsa.v1+xml'
-
-
-# Main
-if __name__ == '__main__':
-    cpm.start_cpm()
-    dpm.start_dpm()
+import logging
+import time
+from daemon import runner
 
 
+class Dashboard:
 
-# dds_url = "http://agg.netherlight.net/dds/documents"
+    def __init__(self):
+        self.stdin_path = '/dev/null'
+        self.stdout_path = 'dashboard.out'
+        self.stderr_path = 'dashboard.err'
+        self.pidfile_path = '/var/run/dashboard/dashboard.pid'
+        self.pidfile_timeout = 5
 
-# domains_topology = []
-# domains_nsa = []
+    def run(self):
+        while True:
 
-# req = requests.get(dds_url)
+            logger.info("AutoGOLE Dashboard Starting")
 
-# dds_file = ET.XML(req.text)
+            timeout = 15
 
-# domains_topology = get_domains(dds_file, topo_v2)
-# domains_nsa = get_domains(dds_file, nsa)
+            logger.info("Starting control plane checks")
+            cpm.start_cpm()
+            logger.info("Starting data plane checks")
+            dpm.start_dpm()
+
+            time.sleep(timeout * 60)
+
+            logger.debug("Debug message")
+            logger.info("Info message")
+            logger.warn("Warning message")
+            logger.error("Error message")
 
 
+app = Dashboard()
 
+logger = logging.getLogger("DashboardLog")
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler = logging.FileHandler("dashboard.log")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
-# Debug
-# for domain in domains_nsa:
-# 	print domain[2][0].attrib
-
-
-
-# print peersWith(domains_nsa).items()
-
-# peersWithMismatches(peersWith(domains_nsa))
-# print '\n'
-# noPeersWith(domains_nsa)
-# print '\n'
-# unknownPeersWidth(domains_nsa)
+daemon_runner = runner.DaemonRunner(app)
+#This ensures that the logger file handle does not get closed during daemonization
+daemon_runner.daemon_context.files_preserve = [handler.stream]
+daemon_runner.do_action()

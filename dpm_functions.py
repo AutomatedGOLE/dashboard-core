@@ -49,29 +49,25 @@ def findAlias(domain_ports, src_domain, src_port, dst_port):
         if domain != src_domain:
             alias_list = domain_ports[domain][0]
             for alias in alias_list:
-                # print "Compare: " + dst_port + " with " + alias[1] + " and " + src_port + " with " + alias[3]
                 if alias[0] == dst_port and alias[2] == src_port:
-                    # print "\n\n\n\n FOUND " + alias[1] + "   " + alias[3] + "\n\n\n\n"
                     return 1
     return 0
 
 
 def isAlias(domain_ports, cursor):
     num_alias = 0
-    num_domains=0
+    num_domains = 0
     # Iterate domains
     for domain in domain_ports:
-        num_domains+=1
+        num_domains += 1
         alias_list = domain_ports[domain][0]
         for alias in alias_list:
-             num_alias+=1
-             if not findAlias(domain_ports, domain, alias[0], alias[2]):
+            num_alias += 1
+            if not findAlias(domain_ports, domain, alias[0], alias[2]):
                  # Add mismatch to database
-                db.add_isAlias(domain, alias[0], alias[1], alias[2], cursor)
-                print "Found isAlias mismatch: Source: " + alias[0] + " Destination: " + alias[2]
-        #      break
-             else:
+                 db.add_isAlias(domain, alias[0], alias[1], alias[2], cursor)
+                 print "Found isAlias mismatch: Source: " + alias[0] + " Destination: " + alias[2]
+            else:
                  print "Found isAlias MATCH: Source: " + alias[0] + " Destination: " + alias[2]
-        # break
     print num_domains
     print num_alias

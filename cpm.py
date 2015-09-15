@@ -35,15 +35,9 @@ def start_cpm():
     domain_peers = cpmf.peersWith(domains_nsa)
 
     cpmf.peersWithMismatches(domain_peers, cursor)
-    print '\n'
     cpmf.noPeersWith(domains_nsa, cursor)
-    print '\n'
     cpmf.unknownPeersWidth(domains_nsa, cursor)
-    print '\n'
     cpmf.notRef(domain_peers, cursor)
 
     # Commit changes and close connection
     db.database_end(db_connection)
-
-
-    print "\n\n\n\n TESTING \n\n\n"
