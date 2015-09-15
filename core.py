@@ -8,10 +8,12 @@ import cpm
 import dpm
 import logging
 import time
+import os
+import core_functions as cf
 from daemon import runner
 
 
-class Dashboard:
+class Dashboard():
 
     def __init__(self):
         self.stdin_path = '/dev/null'
@@ -25,31 +27,37 @@ class Dashboard:
 
             logger.info("AutoGOLE Dashboard Starting")
 
-            timeout = 15
+            __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+            config_file = os.path.join(__location__, 'dashboard.conf')
+
+            # Read configuration file
+            config = cf.parse_config(config_file)
+
+            refresh = float(config.get('refresh'))
+            logger.debug("Refresh time = " + str(refresh) + " minutes")
 
             logger.info("Starting control plane checks")
             cpm.start_cpm()
             logger.info("Starting data plane checks")
             dpm.start_dpm()
 
-            time.sleep(timeout * 60)
+            time.sleep(refresh * 60)
 
-            logger.debug("Debug message")
-            logger.info("Info message")
-            logger.warn("Warning message")
-            logger.error("Error message")
+            # logger.debug("Debug message")
+            # logger.info("Info message")
+            # logger.warn("Warning message")
+            # logger.error("Error message")
 
 
 app = Dashboard()
 
 logger = logging.getLogger("DashboardLog")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler = logging.FileHandler("dashboard.log")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 daemon_runner = runner.DaemonRunner(app)
-#This ensures that the logger file handle does not get closed during daemonization
 daemon_runner.daemon_context.files_preserve = [handler.stream]
 daemon_runner.do_action()

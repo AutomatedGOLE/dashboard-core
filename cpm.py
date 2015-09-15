@@ -27,7 +27,7 @@ def start_cpm():
 
     # Connect to DB
     db_connection = db.database_start()
-    cursor =  db_connection.cursor()
+    cursor = db_connection.cursor()
 
     # Clean DB
     db.table_clear(['peerswithmismatches', 'peerswith', 'nopeers', 'unknownpeers'], cursor)
