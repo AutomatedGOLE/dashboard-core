@@ -25,9 +25,9 @@ def getAlias(domains_topology):
     num_domains=0
 
     for domain in domains_topology:
-        num_domains+=1
+        num_domains += 1
         # Matrix for list -> src_port, dst_domain, dst_port
-        alias=[]
+        alias = []
 
         for relation in domain[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
 
