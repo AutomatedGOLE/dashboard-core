@@ -7,6 +7,8 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 
 from collections import defaultdict
 import database as db
+from general_functions import ping
+
 
 def peersWith(domains_nsa):
     domain_peers = defaultdict(list)
@@ -27,7 +29,6 @@ def noPeersWith(domains_nsa, cursor):
 
 
 def peersWithMismatches(domain_peers, cursor):
-
     for nsa, peers in domain_peers.items():
         # for each peer, check if the opposite is present
         for peer in peers:
@@ -68,3 +69,23 @@ def notRef(domain_peers, cursor):
         if nsa not in peer_list:
             db.add_notref(nsa, cursor)
             print str(nsa) + ' not referenced by any peerswith'
+
+
+def cp_connectivity(domains_nsa, cursor):
+    interfaces = ['application/vnd.ogf.nsi.cs.v2.provider+soap', 'application/vnd.org.ogf.nsi.cs.v2+soap', 'application/vnd.ogf.nsi.cs.v2.requester+soap', 'application/vnd.ogf.nsi.topology.v2+xml']
+
+    print "\n\nConnectivity!!\n\n"
+    for domain in domains_nsa:
+        print domain[0].text
+        result = ''
+        for interface in domain.iter('interface'):
+            if interface[0].text in interfaces:
+                print 'interface: ' + interface[0].text + ' translated to ' + interface[1].text.split(':')[1].split('/')[2]
+                result = ping(interface[1].text.split(':')[1].split('/')[2])
+                break
+
+        if result == '':
+            print "Error! No suitable interface was found for domain " + domain[0].text
+            result = 2
+
+        db.cp_connectivity(domain[0].text, result, cursor)
