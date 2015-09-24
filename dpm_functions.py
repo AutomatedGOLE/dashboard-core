@@ -22,7 +22,7 @@ def getAlias(domains_topology):
 
     domain_ports = defaultdict(list)
     num_alias = 0
-    num_domains=0
+    num_domains = 0
 
     for domain in domains_topology:
         num_domains += 1
@@ -31,15 +31,24 @@ def getAlias(domains_topology):
 
         for relation in domain[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
 
-            if relation[0].find('{http://schemas.ogf.org/nml/2013/05/base#}Relation') and str(relation[0][1].attrib).find('isAlias'):
-                alias.append([relation[0].attrib['id'], domainFromPort(relation[0][1][0].attrib['id']), relation[0][1][0].attrib['id']])
-                num_alias += 1
+            # if relation[0].find('{http://schemas.ogf.org/nml/2013/05/base#}Relation') and str(relation[0][1].attrib).find('isAlias'):
+            #     alias.append([relation[0].attrib['id'], domainFromPort(relation[0][1][0].attrib['id']), relation[0][1][0].attrib['id']])
+            #     num_alias += 1
+
+            for portgroup in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}PortGroup'):
+                try:
+                    if str(portgroup[1].attrib).find('isAlias'):
+                        alias.append([portgroup.attrib['id'], domainFromPort(portgroup[1][0].attrib['id']), portgroup[1][0].attrib['id']])
+                        num_alias += 1
+                except (IndexError):
+                    pass
 
         # Add to structure
         domain_ports[domainFromPort(relation[0].attrib['id'])].append(alias)
 
     print num_domains
     print num_alias
+
     return domain_ports
 
 
