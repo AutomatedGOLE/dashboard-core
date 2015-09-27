@@ -55,11 +55,11 @@ def getAlias(domains_topology):
 def findAlias(domain_ports, src_domain, src_port, dst_port):
 
     for domain in domain_ports:
-        if domain != src_domain:
-            alias_list = domain_ports[domain][0]
-            for alias in alias_list:
-                if alias[0] == dst_port and alias[2] == src_port:
-                    return 1
+        # if domain != src_domain:
+        alias_list = domain_ports[domain][0]
+        for alias in alias_list:
+            if alias[0] == dst_port and alias[2] == src_port:
+                return 1
     return 0
 
 
