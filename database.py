@@ -49,6 +49,16 @@ def add_isAlias(src_domain, src_port, dst_domain, dst_port, cursor):
     cursor.execute(query)
 
 
+def add_isAliasMatch(src_domain, src_port, dst_domain, dst_port, cursor):
+    query = "INSERT INTO isaliasmatch (src_domain, src_port, dst_domain, dst_port) VALUES (\"" + src_domain + "\", \"" + src_port + "\", \"" + dst_domain + "\", \"" + dst_port + "\")"
+    cursor.execute(query)
+
+
+def add_isAliasVlan(src_domain, src_port, dst_domain, dst_port, src_vlans, dst_vlans, cursor):
+    query = "INSERT INTO isaliasvlans (src_domain, src_port, src_vlans, dst_domain, dst_port, dst_vlans) VALUES (\"" + src_domain + "\", \"" + src_port + "\", \"" + src_vlans + "\", \"" + dst_domain + "\", \"" + dst_port + "\", \"" + dst_vlans + "\")"
+    cursor.execute(query)
+
+
 def add_notref(nsa, cursor):
     query = "INSERT INTO notref (nsa) VALUES (\"" + nsa + "\")"
     cursor.execute(query)
