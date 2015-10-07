@@ -26,10 +26,10 @@ def start_dpm():
 
     # Connect to DB
     db_connection = db.database_start()
-    cursor =  db_connection.cursor()
+    cursor = db_connection.cursor()
 
     # Clean DB
-    db.table_clear(['isalias', 'isaliasvlans'], cursor)
+    db.table_clear(['isalias', 'isaliasvlans', 'isaliasmatch'], cursor)
 
     # Find isAlias mismatches
     dpmf.isAlias(dpmf.getAlias(domains_topology), cursor)

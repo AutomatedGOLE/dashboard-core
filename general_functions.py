@@ -20,6 +20,8 @@ def get_domains(dds_file, domain_type):
 def ping(host):
     result = os.system("ping -c 1 " + host)
 
+    print "Result " + str(result)
+
     if result == 0:
         return 0
     else:
