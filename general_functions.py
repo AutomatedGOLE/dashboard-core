@@ -7,6 +7,7 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 
 import os
 
+
 def get_domains(dds_file, domain_type):
     domains = []
 

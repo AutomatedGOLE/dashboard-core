@@ -7,7 +7,20 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 
 from collections import defaultdict
 import database as db
+import os
 from general_functions import ping
+
+
+def get_wsdl(url):
+    # result = os.system("curl " + url)
+    #
+    # print "Result " + str(result)
+    #
+    # if result == 0:
+    #     return 0
+    # else:
+    #     return 1
+    return 0
 
 
 def peersWith(domains_nsa):
@@ -72,7 +85,9 @@ def notRef(domain_peers, cursor):
 
 
 def cp_connectivity(domains_nsa, cursor):
-    interfaces = ['application/vnd.ogf.nsi.cs.v2.provider+soap', 'application/vnd.org.ogf.nsi.cs.v2+soap', 'application/vnd.ogf.nsi.cs.v2.requester+soap', 'application/vnd.ogf.nsi.topology.v2+xml']
+    # interfaces = ['application/vnd.ogf.nsi.cs.v2.provider+soap', 'application/vnd.org.ogf.nsi.cs.v2+soap', 'application/vnd.ogf.nsi.cs.v2.requester+soap', 'application/vnd.ogf.nsi.topology.v2+xml']
+
+    interfaces = ['application/vnd.ogf.nsi.cs.v2.provider+soap']
 
     print "\n\nConnectivity!!\n\n"
     for domain in domains_nsa:
@@ -81,7 +96,7 @@ def cp_connectivity(domains_nsa, cursor):
         for interface in domain.iter('interface'):
             if interface[0].text in interfaces:
                 print 'interface: ' + interface[0].text + ' translated to ' + interface[1].text.split(':')[1].split('/')[2]
-                result = ping(interface[1].text.split(':')[1].split('/')[2])
+                result = get_wsdl(interface[1].text.split(':')[1].split('/')[2])
                 break
 
         if result == '':
