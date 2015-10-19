@@ -11,18 +11,6 @@ import os
 from general_functions import ping
 
 
-def get_wsdl(url):
-    # result = os.system("curl " + url)
-    #
-    # print "Result " + str(result)
-    #
-    # if result == 0:
-    #     return 0
-    # else:
-    #     return 1
-    return 0
-
-
 def peersWith(domains_nsa):
     domain_peers = defaultdict(list)
 
@@ -96,7 +84,7 @@ def cp_connectivity(domains_nsa, cursor):
         for interface in domain.iter('interface'):
             if interface[0].text in interfaces:
                 print 'interface: ' + interface[0].text + ' translated to ' + interface[1].text.split(':')[1].split('/')[2]
-                result = get_wsdl(interface[1].text.split(':')[1].split('/')[2])
+                result = ping(interface[1].text.split(':')[1].split('/')[2])
                 break
 
         if result == '':

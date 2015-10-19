@@ -22,19 +22,19 @@ def switch(domains_topology, cursor):
                     db.switch(domain.attrib['id'], relation[0].attrib['id'], 'No', cursor)
 
 
-def domainFromPort(port):
-
-    if '::' in port:
-        splitted = port.split('::')
-        return splitted[0]
-    elif ';;' in port:
-        splitted = port.split(';;')
-        return splitted[0]
-    else:
-        splitted = port.split(':')
-        while len(splitted) > 5:
-            splitted.pop()
-        return ':'.join(splitted)
+# def domainFromPort(port):
+#
+#     if '::' in port:
+#         splitted = port.split('::')
+#         return splitted[0]
+#     elif ';;' in port:
+#         splitted = port.split(';;')
+#         return splitted[0]
+#     else:
+#         splitted = port.split(':')
+#         while len(splitted) > 5:
+#             splitted.pop()
+#         return ':'.join(splitted)
 
 
 def domainFromPortNew(domain_ports, port):
