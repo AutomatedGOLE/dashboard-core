@@ -22,23 +22,7 @@ def switch(domains_topology, cursor):
                     db.switch(domain.attrib['id'], relation[0].attrib['id'], 'No', cursor)
 
 
-# def domainFromPort(port):
-#
-#     if '::' in port:
-#         splitted = port.split('::')
-#         return splitted[0]
-#     elif ';;' in port:
-#         splitted = port.split(';;')
-#         return splitted[0]
-#     else:
-#         splitted = port.split(':')
-#         while len(splitted) > 5:
-#             splitted.pop()
-#         return ':'.join(splitted)
-
-
-def domainFromPortNew(domain_ports, port):
-    # return domainFromPort(port)
+def domainFromPort(domain_ports, port):
 
     for domain in domain_ports:
         alias_list = domain_ports[domain][0]
@@ -46,6 +30,43 @@ def domainFromPortNew(domain_ports, port):
             if alias[0] == port:
                 return domain
     return ''
+
+
+def splitAndFind(domain_ports, port, num):
+    domain_list = []
+    splitted = port.split(':')
+
+    while len(splitted) > num:
+        splitted.pop()
+    topology = ':'.join(splitted)
+
+    for domain in domain_ports:
+        if topology in domain:
+            domain_list.append(domain)
+
+    if len(domain_list) == 0:
+        domain_list.append('')
+        return domain_list
+    else:
+        return domain_list
+
+
+# Review this
+def domainFromPortUnk(domain_ports, port):
+
+    if '::' in port:
+        splitted = port.split('::')
+        return splitted[0]
+    elif ';;' in port:
+        splitted = port.split(';;')
+        return splitted[0]
+    else:
+        domain_list = splitAndFind(domain_ports, port, 5)
+
+        if len(domain_list) > 1:
+            return splitAndFind(domain_ports, port, 6)[0]
+        else:
+            return domain_list[0]
 
 
 def getAlias(domains_topology):
@@ -127,14 +148,14 @@ def isAlias(domain_ports, cursor):
             num_alias += 1
             if not findAlias(domain_ports, alias[0], alias[1]):
 
-                db.add_isAlias(domain, alias[0], alias[1], cursor)
+                db.add_isAlias(domain, alias[0], domainFromPortUnk(domain_ports, alias[1]), alias[1], cursor)
 
             else:
-                db.add_isAliasMatch(domain, alias[0], domainFromPortNew(domain_ports, alias[1]), alias[1], cursor)
+                db.add_isAliasMatch(domain, alias[0], domainFromPort(domain_ports, alias[1]), alias[1], cursor)
 
                 dst_vlans = aliasVlans(domain_ports, alias[0], alias[1], alias[2])
                 if dst_vlans != 1:
 
-                    db.add_isAliasVlan(domain, alias[0], domainFromPortNew(domain_ports, alias[1]), alias[1], alias[2], dst_vlans, cursor)
+                    db.add_isAliasVlan(domain, alias[0], domainFromPort(domain_ports, alias[1]), alias[1], alias[2], dst_vlans, cursor)
     print num_domains
     print num_alias

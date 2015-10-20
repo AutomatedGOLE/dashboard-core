@@ -44,8 +44,8 @@ def add_unknownpeer(nsa, unknown, cursor):
     cursor.execute(query)
 
 
-def add_isAlias(src_domain, src_port, dst_port, cursor):
-    query = "INSERT INTO isalias (src_domain, src_port, dst_port) VALUES (\"" + src_domain + "\", \"" + src_port + "\", \"" + dst_port + "\")"
+def add_isAlias(src_domain, src_port, dst_port, dst_domain, cursor):
+    query = "INSERT INTO isalias (src_domain, src_port, dst_domain, dst_port) VALUES (\"" + src_domain + "\", \"" + src_port + "\", \"" + dst_domain + "\", \"" + dst_port + "\")"
     cursor.execute(query)
 
 
