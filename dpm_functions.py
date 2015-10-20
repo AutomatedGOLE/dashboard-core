@@ -32,7 +32,7 @@ def domainFromPort(domain_ports, port):
     return ''
 
 
-def splitAndFind(domain_ports, port, num):
+def splitAndFind(domain_ports, port, num, cursor):
     domain_list = []
     splitted = port.split(':')
 
@@ -45,6 +45,7 @@ def splitAndFind(domain_ports, port, num):
             domain_list.append(domain)
 
     if len(domain_list) == 0:
+        db.add_unknowntopology(domain, topology, cursor)
         domain_list.append('')
         return domain_list
     else:
@@ -52,7 +53,7 @@ def splitAndFind(domain_ports, port, num):
 
 
 # Review this
-def domainFromPortUnk(domain_ports, port):
+def domainFromPortUnk(domain_ports, port, cursor):
 
     if '::' in port:
         splitted = port.split('::')
@@ -61,10 +62,10 @@ def domainFromPortUnk(domain_ports, port):
         splitted = port.split(';;')
         return splitted[0]
     else:
-        domain_list = splitAndFind(domain_ports, port, 5)
+        domain_list = splitAndFind(domain_ports, port, 5, cursor)
 
         if len(domain_list) > 1:
-            return splitAndFind(domain_ports, port, 6)[0]
+            return splitAndFind(domain_ports, port, 6, cursor)[0]
         else:
             return domain_list[0]
 
@@ -148,7 +149,7 @@ def isAlias(domain_ports, cursor):
             num_alias += 1
             if not findAlias(domain_ports, alias[0], alias[1]):
 
-                db.add_isAlias(domain, alias[0], domainFromPortUnk(domain_ports, alias[1]), alias[1], cursor)
+                db.add_isAlias(domain, alias[0], domainFromPortUnk(domain_ports, alias[1], cursor), alias[1], cursor)
 
             else:
                 db.add_isAliasMatch(domain, alias[0], domainFromPort(domain_ports, alias[1]), alias[1], cursor)

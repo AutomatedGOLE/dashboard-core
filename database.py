@@ -44,7 +44,7 @@ def add_unknownpeer(nsa, unknown, cursor):
     cursor.execute(query)
 
 
-def add_isAlias(src_domain, src_port, dst_port, dst_domain, cursor):
+def add_isAlias(src_domain, src_port, dst_domain, dst_port, cursor):
     query = "INSERT INTO isalias (src_domain, src_port, dst_domain, dst_port) VALUES (\"" + src_domain + "\", \"" + src_port + "\", \"" + dst_domain + "\", \"" + dst_port + "\")"
     cursor.execute(query)
 
@@ -76,4 +76,8 @@ def dp_connectivity(nsa, result, cursor):
 
 def switch(topology, service, labelswapping, cursor):
     query = "INSERT INTO switch (topology, service, labelswapping) VALUES (\"" + topology + "\", \"" + service + "\", \"" + labelswapping + "\")"
+    cursor.execute(query)
+
+def add_unknowntopology(topology, unknown, cursor):
+    query = "INSERT INTO unknowntopologies (topology, unknown) VALUES (\"" + topology + "\", \"" + unknown + "\")"
     cursor.execute(query)
