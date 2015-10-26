@@ -45,21 +45,36 @@ def splitAndFind(domain_ports, port, num, cursor):
             domain_list.append(domain)
 
     if len(domain_list) == 0:
-        db.add_unknowntopology(domain, topology, cursor)
-        domain_list.append('')
+        # The topology does not exist
+        db.add_unknowntopology(topology, cursor)
+        # domain_list.append('')
+        domain_list.append(topology)
         return domain_list
     else:
         return domain_list
+
+
+def topology_exists(domain_ports, topology):
+    for domain in domain_ports:
+        if str(topology) in domain:
+            return 1
+    return 0
 
 
 # Review this
 def domainFromPortUnk(domain_ports, port, cursor):
 
     if '::' in port:
-        splitted = port.split('::')
+        splitted = port.split('::')[0]
+        # Check if topology exists
+        if not topology_exists(domain_ports, splitted):
+            db.add_unknowntopology(splitted, cursor)
         return splitted[0]
     elif ';;' in port:
-        splitted = port.split(';;')
+        splitted = port.split(';;')[0]
+        # Check if topology exists
+        if not topology_exists(domain_ports, splitted):
+            db.add_unknowntopology(splitted, cursor)
         return splitted[0]
     else:
         domain_list = splitAndFind(domain_ports, port, 5, cursor)

@@ -78,6 +78,7 @@ def switch(topology, service, labelswapping, cursor):
     query = "INSERT INTO switch (topology, service, labelswapping) VALUES (\"" + topology + "\", \"" + service + "\", \"" + labelswapping + "\")"
     cursor.execute(query)
 
-def add_unknowntopology(topology, unknown, cursor):
-    query = "INSERT INTO unknowntopologies (topology, unknown) VALUES (\"" + topology + "\", \"" + unknown + "\")"
+
+def add_unknowntopology(topology, cursor):
+    query = "INSERT IGNORE INTO unknowntopologies (topology) VALUES (\"" + str(topology) + "\")"
     cursor.execute(query)
