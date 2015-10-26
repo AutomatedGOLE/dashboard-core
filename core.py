@@ -37,7 +37,7 @@ class Dashboard():
             logger.debug("Refresh time = " + str(refresh) + " minutes")
 
             logger.info("Starting control plane checks")
-            cpm.start_cpm()
+            # cpm.start_cpm()
             logger.info("Starting data plane checks")
             dpm.start_dpm()
 
