@@ -10,16 +10,74 @@ import database as db
 
 isAlias_type = "http://schemas.ogf.org/nml/2013/05/base#isAlias"
 
+
+def add_switchports(topology, switch, switchtype, labeltype, encoding, cursor):
+    if switchtype == 'default' or switchtype == 'wildcard':
+        # print ("switch default or wildcard")
+        # Add all ports -> not yet checking for labeltype and encoding
+        for relation in topology[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
+            if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
+                for portgroup in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}PortGroup'):
+                    if switch != '':
+                        db.add_switchports(topology.attrib['id'], switch.attrib['id'], portgroup.attrib['id'], cursor)
+                    else:
+                        db.add_switchports(topology.attrib['id'], switch, portgroup.attrib['id'], cursor)
+    else:
+        # print ("normal switch")
+        # Add ports in the switch definition
+        for relation in switch.findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
+            if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
+                for portgroup in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}PortGroup'):
+                    db.add_switchports(topology.attrib['id'], switch.attrib['id'], portgroup.attrib['id'], cursor)
+                for port in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}Port'):
+                    db.add_switchports(topology.attrib['id'], switch.attrib['id'], port.attrib['id'], cursor)
+
+
 def switch(domains_topology, cursor):
 
-    for domain in domains_topology:
-        for relation in domain[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
+    default_encoding = "http://schemas.ogf.org/nml/2012/10/ethernet"
+    default_labeltype = "http://schemas.ogf.org/nml/2012/10/ethernet#vlan"
+
+    for topology in domains_topology:
+        has_service = 0
+        for relation in topology[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
             if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasService":
+                has_service = 1
 
                 if relation[0].attrib['labelSwapping'] == 'true':
-                    db.switch(domain.attrib['id'], relation[0].attrib['id'], 'Yes', cursor)
+                    label_swapping = 'Yes'
                 else:
-                    db.switch(domain.attrib['id'], relation[0].attrib['id'], 'No', cursor)
+                    label_swapping = 'No'
+
+                try:
+                    encoding = relation[0].attrib['encoding']
+                except KeyError:
+                    encoding = default_encoding
+
+                try:
+                    labeltype = relation[0].attrib['labelType']
+                except KeyError:
+                    labeltype = default_labeltype
+
+                relation_port = relation[0].find('{http://schemas.ogf.org/nml/2013/05/base#}Relation')
+
+                if relation_port:
+                    if relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
+                        switchtype = 'standard'
+                    else:
+                        switchtype = 'wildcard'
+                else:
+                    switchtype = 'wildcard'
+
+                # print "\n" + topology.attrib['id'] + "  " + relation[0].attrib['id'] + "  " + label_swapping + "  " + labeltype + "  " + switchtype + "  " + encoding
+                db.add_switch(topology.attrib['id'], relation[0].attrib['id'], label_swapping, labeltype, switchtype, encoding, cursor)
+                add_switchports(topology, relation[0], switchtype, labeltype, encoding, cursor)
+
+        if has_service == 0:
+            # Has no switching service defined -> defaults apply
+            # print "\n" + topology.attrib['id'] + "  default"
+            db.add_switch(topology.attrib['id'], '', 'No', 'http://schemas.ogf.org/nml/2012/10/ethernet#vlan', 'default', 'http://schemas.ogf.org/nml/2012/10/ethernet', cursor)
+            add_switchports(topology, '', 'default', default_labeltype, default_encoding, cursor)
 
 
 def domainFromPort(domain_ports, port):
@@ -175,3 +233,27 @@ def isAlias(domain_ports, cursor):
                     db.add_isAliasVlan(domain, alias[0], domainFromPort(domain_ports, alias[1]), alias[1], alias[2], dst_vlans, cursor)
     print num_domains
     print num_alias
+
+
+def topologyNsaMatch(domains_nsa, domains_topology, cursor):
+    # Database: Topology | NSA | Status (0 - ok, 1 - nsa mismatch)
+
+    # Make dic to topologies on NSAs
+    nsastopologies = defaultdict(list)
+    topologiesnsas = defaultdict()
+
+    # Get topologies for each domain
+    for domain in domains_nsa:
+        for topologies in domain.iter('networkId'):
+            nsastopologies[domain[0].text].append(topologies.text)
+
+    # Get NSA for each topology
+    for topology in domains_topology:
+        topologiesnsas[topology.attrib['id']] = topology[0].text
+
+    # Match Topology with NSA
+    for topology, nsa in topologiesnsas.items():
+        if topology in nsastopologies[nsa]:
+            db.topologynsa(topology, nsa, 0, cursor)
+        else:
+            db.topologynsa(topology, nsa, 1, cursor)

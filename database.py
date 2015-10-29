@@ -74,11 +74,31 @@ def dp_connectivity(nsa, result, cursor):
     cursor.execute(query)
 
 
-def switch(topology, service, labelswapping, cursor):
-    query = "INSERT INTO switch (topology, service, labelswapping) VALUES (\"" + topology + "\", \"" + service + "\", \"" + labelswapping + "\")"
+def add_switch(topology, service, labelswapping, labeltype, switchtype, encoding, cursor):
+    query = "INSERT INTO switch (topology, service, labelswapping, labeltype, switchtype, encoding) VALUES (\"" + topology + "\", \"" + service + "\", \"" + labelswapping +"\", \"" + labeltype + "\", \"" + switchtype + "\", \"" + encoding + "\")"
+    cursor.execute(query)
+
+
+def add_switchports(topology, service, port, cursor):
+    query = "INSERT INTO switchports (topology, service, port) VALUES (\"" + topology + "\", \"" + service + "\", \"" + port + "\")"
     cursor.execute(query)
 
 
 def add_unknowntopology(topology, cursor):
     query = "INSERT IGNORE INTO unknowntopologies (topology) VALUES (\"" + str(topology) + "\")"
+    cursor.execute(query)
+
+
+def nsastopologies(nsa, topology, status, cursor):
+    query = "INSERT INTO nsastopologies (nsa, topology, status) VALUES (\"" + nsa + "\", \"" + topology + "\", \"" + str(status) + "\")"
+    cursor.execute(query)
+
+
+def topologynsa(topology, nsa, status, cursor):
+    query = "INSERT INTO topologynsa (topology, nsa, status) VALUES (\"" + topology + "\", \"" + nsa + "\", \"" + str(status) + "\")"
+    cursor.execute(query)
+
+
+def add_peersroles(nsa, role, cursor):
+    query = "INSERT INTO peersroles (nsa, role) VALUES (\"" + nsa + "\", \"" + role + "\")"
     cursor.execute(query)

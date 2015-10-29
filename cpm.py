@@ -30,7 +30,7 @@ def start_cpm():
     cursor = db_connection.cursor()
 
     # Clean DBs
-    db.table_clear(['peerswithmismatches', 'peerswith', 'nopeers', 'unknownpeers', 'notref', 'cp_connectivity'], cursor)
+    db.table_clear(['peerswithmismatches', 'peerswith', 'nopeers', 'unknownpeers', 'notref', 'cp_connectivity', 'nsastopologies', 'peersroles'], cursor)
 
     domain_peers = cpmf.peersWith(domains_nsa)
 
@@ -39,6 +39,8 @@ def start_cpm():
     cpmf.unknownPeersWidth(domains_nsa, domain_peers, cursor)
     cpmf.notRef(domain_peers, cursor)
     cpmf.cp_connectivity(domains_nsa, cursor)
+    cpmf.nsasTopologiesMatch(domains_nsa, domains_topology, cursor)
+    cpmf.peersroles(domains_nsa, cursor)
 
     # Commit changes and close connection
     db.database_end(db_connection)
