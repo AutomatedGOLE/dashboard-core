@@ -76,7 +76,7 @@ def switch(domains_topology, cursor):
         if has_service == 0:
             # Has no switching service defined -> defaults apply
             # print "\n" + topology.attrib['id'] + "  default"
-            db.add_switch(topology.attrib['id'], '', 'No', 'http://schemas.ogf.org/nml/2012/10/ethernet#vlan', 'default', 'http://schemas.ogf.org/nml/2012/10/ethernet', cursor)
+            db.add_switch(topology.attrib['id'], '', 'No', 'http://schemas.ogf.org/nml/2012/10/ethernet#vlan', 'Default', 'http://schemas.ogf.org/nml/2012/10/ethernet', cursor)
             add_switchports(topology, '', 'default', default_labeltype, default_encoding, cursor)
 
 
