@@ -32,7 +32,7 @@ def start_dpm():
     db.table_clear(['isalias', 'isaliasvlans', 'isaliasmatch', 'switch', 'dp_connectivity', 'unknowntopologies', 'topologynsa', 'switchports'], cursor)
 
     # Find isAlias mismatches
-    dpmf.isAlias(dpmf.getAlias(domains_topology), cursor)
+    dpmf.isAlias(domains_topology, cursor)
 
     dpmf.topologyNsaMatch(domains_nsa, domains_topology, cursor)
 

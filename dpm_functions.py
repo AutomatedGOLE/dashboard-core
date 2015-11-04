@@ -63,11 +63,11 @@ def switch(domains_topology, cursor):
 
                 if relation_port:
                     if relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
-                        switchtype = 'standard'
+                        switchtype = 'Standard'
                     else:
-                        switchtype = 'wildcard'
+                        switchtype = 'Wildcard'
                 else:
-                    switchtype = 'wildcard'
+                    switchtype = 'Wildcard'
 
                 # print "\n" + topology.attrib['id'] + "  " + relation[0].attrib['id'] + "  " + label_swapping + "  " + labeltype + "  " + switchtype + "  " + encoding
                 db.add_switch(topology.attrib['id'], relation[0].attrib['id'], label_swapping, labeltype, switchtype, encoding, cursor)
@@ -90,14 +90,14 @@ def domainFromPort(domain_ports, port):
     return ''
 
 
-def topology_exists(domain_ports, topology):
-    for domain in domain_ports:
-        if str(topology) in domain:
+def topology_exists(domains_topology, topology):
+    for domain in domains_topology:
+        if topology in domain.attrib['id']:
             return 1
     return 0
 
 
-def splitAndFind(domain_ports, port, num, cursor):
+def splitAndFind(domains_topology, port, num, cursor):
     domain_list = []
     splitted = port.split(':')
 
@@ -105,13 +105,15 @@ def splitAndFind(domain_ports, port, num, cursor):
         splitted.pop()
     topology = ':'.join(splitted)
 
-    for domain in domain_ports:
-        if topology in domain:
-            domain_list.append(domain)
+    for domain in domains_topology:
+        if topology in domain.attrib['id']:
+            domain_list.append(domain.attrib['id'])
 
     if len(domain_list) == 0:
         # The topology does not exist
         db.add_unknowntopology(topology, cursor)
+        print "len(domain_list)"
+        print topology
         # domain_list.append('')
         domain_list.append(topology)
         return domain_list
@@ -120,25 +122,25 @@ def splitAndFind(domain_ports, port, num, cursor):
 
 
 # Review this
-def domainFromPortUnk(domain_ports, port, cursor):
+def domainFromPortUnk(domains_topology, port, cursor):
 
     if '::' in port:
         splitted = port.split('::')[0]
         # Check if topology exists
-        if not topology_exists(domain_ports, splitted):
+        if not topology_exists(domains_topology, splitted):
             db.add_unknowntopology(splitted, cursor)
         return splitted
     elif ';;' in port:
         splitted = port.split(';;')[0]
         # Check if topology exists
-        if not topology_exists(domain_ports, splitted):
+        if not topology_exists(domains_topology, splitted):
             db.add_unknowntopology(splitted, cursor)
         return splitted
     else:
-        domain_list = splitAndFind(domain_ports, port, 5, cursor)
+        domain_list = splitAndFind(domains_topology, port, 5, cursor)
 
         if len(domain_list) > 1:
-            return splitAndFind(domain_ports, port, 6, cursor)[0]
+            return splitAndFind(domains_topology, port, 6, cursor)[0]
         else:
             return domain_list[0]
 
@@ -211,9 +213,11 @@ def aliasVlans(domain_ports, src_port, dst_port, source_vlans):
     print "ALIASVLANS FAIL!!!"
 
 
-def isAlias(domain_ports, cursor):
+def isAlias(domains_topology, cursor):
     num_alias = 0
     num_domains = 0
+
+    domain_ports = getAlias(domains_topology)
 
     for domain in domain_ports:
         num_domains += 1
@@ -222,7 +226,7 @@ def isAlias(domain_ports, cursor):
             num_alias += 1
             if not findAlias(domain_ports, alias[0], alias[1]):
 
-                db.add_isAlias(domain, alias[0], domainFromPortUnk(domain_ports, alias[1], cursor), alias[1], cursor)
+                db.add_isAlias(domain, alias[0], domainFromPortUnk(domains_topology, alias[1], cursor), alias[1], cursor)
 
             else:
                 db.add_isAliasMatch(domain, alias[0], domainFromPort(domain_ports, alias[1]), alias[1], cursor)
