@@ -34,12 +34,16 @@ class Dashboard():
             config = cf.parse_config(config_file)
 
             refresh = float(config.get('refresh'))
+            path_testing_refresh = float(config.get('path_testing_refresh'))
             logger.debug("Refresh time = " + str(refresh) + " minutes")
 
             logger.info("Starting control plane checks")
             cpm.start_cpm()
             logger.info("Starting data plane checks")
             dpm.start_dpm()
+
+            logger.info("Starting path segment checks")
+
 
             time.sleep(refresh * 60)
 
