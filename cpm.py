@@ -38,7 +38,7 @@ def start_cpm():
     cpmf.noPeersWith(domains_nsa, cursor)
     cpmf.unknownPeersWidth(domains_nsa, domain_peers, cursor)
     cpmf.notRef(domain_peers, cursor)
-    # cpmf.cp_connectivity(domains_nsa, cursor)
+    cpmf.cp_connectivity(domains_nsa, cursor)
     cpmf.nsasTopologiesMatch(domains_nsa, domains_topology, cursor)
     cpmf.peersroles(domains_nsa, cursor)
 
