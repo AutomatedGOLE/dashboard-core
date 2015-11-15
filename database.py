@@ -69,8 +69,8 @@ def cp_connectivity(nsa, result, cursor):
     cursor.execute(query)
 
 
-def dp_connectivity(nsa, result, cursor):
-    query = "INSERT INTO dp_connectivity (nsa, result) VALUES (\"" + nsa + "\", \"" + str(result) + "\")"
+def dp_connectivity(topology, result, cursor):
+    query = "INSERT INTO dp_connectivity (topology, result) VALUES (\"" + topology + "\", \"" + str(result) + "\")"
     cursor.execute(query)
 
 

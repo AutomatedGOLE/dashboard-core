@@ -14,7 +14,7 @@ import database as db
 topo_v2 = 'vnd.ogf.nsi.topology.v2+xml'
 nsa = 'vnd.ogf.nsi.nsa.v1+xml'
 
-def start_dpm():
+def start_dpm(stps_file, source_topology, path_test):
     dds_url = "http://agg.netherlight.net/dds/documents"
 
     req = requests.get(dds_url)
@@ -28,8 +28,13 @@ def start_dpm():
     db_connection = db.database_start()
     cursor = db_connection.cursor()
 
+    # Trigger data plane testing
+    if path_test:
+        db.table_clear(['dp_connectivity'], cursor)
+        dpmf.path_test(stps_file, source_topology, cursor)
+
     # Clean DB
-    db.table_clear(['isalias', 'isaliasvlans', 'isaliasmatch', 'switch', 'dp_connectivity', 'unknowntopologies', 'topologynsa', 'switchports'], cursor)
+    db.table_clear(['isalias', 'isaliasvlans', 'isaliasmatch', 'switch', 'unknowntopologies', 'topologynsa', 'switchports'], cursor)
 
     # Find isAlias mismatches
     dpmf.isAlias(domains_topology, cursor)

@@ -7,6 +7,12 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 
 from collections import defaultdict
 import database as db
+import threading
+from general_functions import ping
+from general_functions import remote_ping
+import time
+import os
+import paramiko
 
 isAlias_type = "http://schemas.ogf.org/nml/2013/05/base#isAlias"
 
@@ -69,7 +75,6 @@ def switch(domains_topology, cursor):
                 else:
                     switchtype = 'Wildcard'
 
-                # print "\n" + topology.attrib['id'] + "  " + relation[0].attrib['id'] + "  " + label_swapping + "  " + labeltype + "  " + switchtype + "  " + encoding
                 db.add_switch(topology.attrib['id'], relation[0].attrib['id'], label_swapping, labeltype, switchtype, encoding, cursor)
                 add_switchports(topology, relation[0], switchtype, labeltype, encoding, cursor)
 
@@ -121,7 +126,6 @@ def splitAndFind(domains_topology, port, num, cursor):
         return domain_list
 
 
-# Review this
 def domainFromPortUnk(domains_topology, port, cursor):
 
     if '::' in port:
@@ -242,7 +246,6 @@ def isAlias(domains_topology, cursor):
 def topologyNsaMatch(domains_nsa, domains_topology, cursor):
     # Database: Topology | NSA | Status (0 - ok, 1 - nsa mismatch)
 
-    # Make dic to topologies on NSAs
     nsastopologies = defaultdict(list)
     topologiesnsas = defaultdict()
 
@@ -261,3 +264,62 @@ def topologyNsaMatch(domains_nsa, domains_topology, cursor):
             db.topologynsa(topology, nsa, 0, cursor)
         else:
             db.topologynsa(topology, nsa, 1, cursor)
+
+
+def get_stps(stps_file):
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    f = open(os.path.join(__location__, stps_file), 'r')
+    stps = []
+
+    for line in f:
+        if '#' not in line:
+            parsed = line.split(' ')
+            if len(parsed) == 4:
+                stps.append(parsed)
+    return stps
+
+
+def make_reservation(data_plane_vlan, stp):
+    server = "nsa.uvalight.net"
+    command = "onsa reserveprovision -r uvalight.net:2013:requester:onsa -p uvalight.net:2013:requester:onsa -s urn:ogf:network:uvalight.net:2013:topology:ps#" + data_plane_vlan.replace('\n', '') + " -d " + stp.replace('urn:ogf:network:', '') + "#" + data_plane_vlan.replace('\n', '') + " -j user=admin -u https://nsa.uvalight.net:9443/NSI/services/CS2 -a +10 -e +300 -l /etc/opennsa/certs/signed/nsa.uvalight.net-terenachain.pem -k /etc/opennsa/certs/signed/nsa.uvalight.net.key -i /etc/opennsa/certs -b 100 -x -z -v"
+
+    # command = "onsa reserveprovision -r uvalight.net:2013:requester:onsa -p netherlight.net:2013:nsa:safnari -s urn:ogf:network:uvalight.net:2013:topology:ps#" + data_plane_vlan.replace('\n', '') + " -d " + stp.replace('urn:ogf:network:', '') + "#" + data_plane_vlan.replace('\n', '') + " -j user=urn:collab:person:surfguest.nl:39a1749e-617a-4f72-9b91-1031397b4454,token=0efe659e-3dd5-4a42-a91e-16c480c526e6 -u https://agg.netherlight.net/nsi-v2/ConnectionServiceProvider?wsdl  -a +10 -e +300 -l /etc/opennsa/certs/signed/nsa.uvalight.net-terenachain.pem -k /etc/opennsa/certs/signed/nsa.uvalight.net.key -i /etc/opennsa/certs -b 100 -x -z -v"
+    print command
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(server, username="dashboard")
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command(command)
+
+    for line in ssh_stdout.readlines():
+        print line
+        if "provisioned" in line:
+            print "reservation successful"
+            ssh.close()
+            return 1
+
+    print "reservation failed"
+    ssh.close()
+    return 0
+
+
+def path_test(stps_file, source_topology, cursor):
+    # DP Connectivity: 0 - Success, 1 - Fail, 2 - Is_Source, 3 - Reservation_Fail
+    stps = get_stps(stps_file)
+    host_from = "nsa.uvalight.net"
+
+    for topology, stp, host, data_plane_vlan in stps:
+        if topology is source_topology:
+            db.dp_connectivity(topology, 2, cursor)
+        elif make_reservation(data_plane_vlan, stp):
+            time.sleep(240)
+            if remote_ping(host_from, host) != 0:
+                db.dp_connectivity(topology, 0, cursor)
+                print "connectivity"
+            else:
+                print "no conenctivity"
+                db.dp_connectivity(topology, 1, cursor)
+            # Wait 1 minute before going to the next one
+            time.sleep(60)
+        else:
+            print "reservation failed"
+            db.dp_connectivity(topology, 3, cursor)

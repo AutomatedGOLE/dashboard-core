@@ -13,7 +13,7 @@ import core_functions as cf
 from daemon import runner
 
 
-class Dashboard():
+class Dashboard:
 
     def __init__(self):
         self.stdin_path = '/dev/null'
@@ -23,6 +23,7 @@ class Dashboard():
         self.pidfile_timeout = 5
 
     def run(self):
+
         while True:
 
             logger.info("AutoGOLE Dashboard Starting")
@@ -33,19 +34,31 @@ class Dashboard():
             # Read configuration file
             config = cf.parse_config(config_file)
 
+            source_topology = config.get('source_topology')
             refresh = float(config.get('refresh'))
-            path_testing_refresh = float(config.get('path_testing_refresh'))
             logger.debug("Refresh time = " + str(refresh) + " minutes")
+
+            # try:
+            #     if path_testing_refresh <= 0:
+            #         path_testing_refresh = float(config.get('path_testing_refresh'))
+            #         path_test = 1
+            #         print "path_test on"
+            #     else:
+            #         path_test = 0
+            #         print "path_test off"
+            # except UnboundLocalError:
+            #     path_testing_refresh = float(config.get('path_testing_refresh'))
+            #     path_test = 1
+
+            path_test = 1
 
             logger.info("Starting control plane checks")
             cpm.start_cpm()
             logger.info("Starting data plane checks")
-            dpm.start_dpm()
-
-            logger.info("Starting path segment checks")
-
+            dpm.start_dpm("stps.conf", source_topology, path_test)
 
             time.sleep(refresh * 60)
+            # path_testing_refresh -= refresh * 60
 
             # logger.debug("Debug message")
             # logger.info("Info message")
