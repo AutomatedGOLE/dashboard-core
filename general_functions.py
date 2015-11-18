@@ -42,7 +42,7 @@ def remote_ping(host_from, host_to):
 
     for line in ssh_stdout.readlines():
         print line
-        if "0% packet loss" in line:
+        if ", 0% packet loss" in line:
             ssh.close()
             return 1
 

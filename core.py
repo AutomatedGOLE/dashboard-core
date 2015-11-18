@@ -53,7 +53,7 @@ class Dashboard:
             path_test = 1
 
             logger.info("Starting control plane checks")
-            cpm.start_cpm()
+            # cpm.start_cpm()
             logger.info("Starting data plane checks")
             dpm.start_dpm("stps.conf", source_topology, path_test)
 

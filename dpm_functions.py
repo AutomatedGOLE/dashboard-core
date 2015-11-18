@@ -272,7 +272,7 @@ def get_stps(stps_file):
     stps = []
 
     for line in f:
-        if '#' not in line:
+        if '#' not in line.split(' ')[0]:
             parsed = line.split(' ')
             if len(parsed) == 4:
                 stps.append(parsed)
@@ -281,9 +281,9 @@ def get_stps(stps_file):
 
 def make_reservation(data_plane_vlan, stp):
     server = "nsa.uvalight.net"
-    command = "onsa reserveprovision -r uvalight.net:2013:requester:onsa -p uvalight.net:2013:requester:onsa -s urn:ogf:network:uvalight.net:2013:topology:ps#" + data_plane_vlan.replace('\n', '') + " -d " + stp.replace('urn:ogf:network:', '') + "#" + data_plane_vlan.replace('\n', '') + " -j user=admin -u https://nsa.uvalight.net:9443/NSI/services/CS2 -a +10 -e +300 -l /etc/opennsa/certs/signed/nsa.uvalight.net-terenachain.pem -k /etc/opennsa/certs/signed/nsa.uvalight.net.key -i /etc/opennsa/certs -b 100 -x -z -v"
+    #command = "onsa reserveprovision -r uvalight.net:2013:requester:onsa -p uvalight.net:2013:requester:onsa -s urn:ogf:network:uvalight.net:2013:topology:ps#" + data_plane_vlan.replace('\n', '') + " -d " + stp.replace('urn:ogf:network:', '') + " -j user=admin -u https://nsa.uvalight.net:9443/NSI/services/CS2 -a +10 -e +300 -l /etc/opennsa/certs/signed/nsa.uvalight.net-terenachain.pem -k /etc/opennsa/certs/signed/nsa.uvalight.net.key -i /etc/opennsa/certs -b 100 -x -z -v"
+    command = "onsa reserveprovision -r uvalight.net:2013:requester:onsa -p netherlight.net:2013:nsa:safnari -s uvalight.net:2013:topology:ps#" + data_plane_vlan.replace('\n', '') + " -d " + stp.replace('urn:ogf:network:', '') + " -j user=urn:collab:person:surfguest.nl:39a1749e-617a-4f72-9b91-1031397b4454,token=56d5b8bb-489f-4134-99be-7ecf5fb01feb -u https://agg.netherlight.net:443/nsi-v2/ConnectionServiceProvider?wsdl -a +10 -e +300 -l /etc/opennsa/certs/signed/nsa.uvalight.net-terenachain.pem -k /etc/opennsa/certs/signed/nsa.uvalight.net.key -i /etc/opennsa/certs -b 100 -x -z -v"
 
-    # command = "onsa reserveprovision -r uvalight.net:2013:requester:onsa -p netherlight.net:2013:nsa:safnari -s urn:ogf:network:uvalight.net:2013:topology:ps#" + data_plane_vlan.replace('\n', '') + " -d " + stp.replace('urn:ogf:network:', '') + "#" + data_plane_vlan.replace('\n', '') + " -j user=urn:collab:person:surfguest.nl:39a1749e-617a-4f72-9b91-1031397b4454,token=0efe659e-3dd5-4a42-a91e-16c480c526e6 -u https://agg.netherlight.net/nsi-v2/ConnectionServiceProvider?wsdl  -a +10 -e +300 -l /etc/opennsa/certs/signed/nsa.uvalight.net-terenachain.pem -k /etc/opennsa/certs/signed/nsa.uvalight.net.key -i /etc/opennsa/certs -b 100 -x -z -v"
     print command
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -316,10 +316,10 @@ def path_test(stps_file, source_topology, cursor):
                 db.dp_connectivity(topology, 0, cursor)
                 print "connectivity"
             else:
-                print "no conenctivity"
+                print "no connectivity"
                 db.dp_connectivity(topology, 1, cursor)
             # Wait 1 minute before going to the next one
-            time.sleep(60)
+            time.sleep(120)
         else:
             print "reservation failed"
             db.dp_connectivity(topology, 3, cursor)
