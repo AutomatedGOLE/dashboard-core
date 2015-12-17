@@ -1,20 +1,20 @@
-### AutoGOLE Dashboard Core ###
+# AutoGOLE Dashboard Core #
 
 ## Install instructions ##
 
 **Tested on Debian Jessie**
 
-# Install dependencies #
-
-# apt-get install mariadb-server python-pip python-mysqldb
-# mysql_secure_installation
-# pip install paramiko
-# mkdir /var/run/dashboard/
-
+### Install dependencies ###
+```
+apt-get install mariadb-server python-pip python-mysqldb
+mysql_secure_installation
+pip install paramiko
+mkdir /var/run/dashboard/
+```
 **Note: The dashboard needs write access to the directory created above**
 **Note: MySQL instead of MariaDB should work too**
 
-# Set-up database #
+### Set-up database ###
 
 **Note: Replace username and password as intended**
 
@@ -42,6 +42,6 @@ create table dp_connectivity (topology varchar(255), result int);
 GRANT ALL PRIVILEGES ON dashboard.* To 'monitor'@'localhost' IDENTIFIED BY 'monitor_pass';
 ```
 
-# Start Dashboard Core #
+### Start Dashboard Core ###
 
 python $PWD/core.py start
