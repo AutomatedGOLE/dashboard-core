@@ -46,4 +46,6 @@ GRANT ALL PRIVILEGES ON dashboard.* To 'monitor'@'localhost' IDENTIFIED BY 'moni
 
 ### Start Dashboard Core ###
 
+```
 python $PWD/core.py start
+```
