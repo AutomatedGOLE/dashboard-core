@@ -12,13 +12,13 @@ pip install paramiko
 pip install python-daemon
 mkdir /var/run/dashboard/
 ```
-**Note: The dashboard needs write access to the directory created above**
+**Note: The dashboard needs write access to the directory created above.**
 
-**Note: MySQL instead of MariaDB should work too**
+**Note: MySQL instead of MariaDB should also work.**
 
 ### Set-up database ###
 
-**Note: Replace username and password as intended**
+**Note: Replace username and password as intended.**
 
 ```
 CREATE USER 'monitor'@'localhost' IDENTIFIED BY 'monitor_pass';
