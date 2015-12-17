@@ -12,6 +12,7 @@ pip install paramiko
 mkdir /var/run/dashboard/
 ```
 **Note: The dashboard needs write access to the directory created above**
+
 **Note: MySQL instead of MariaDB should work too**
 
 ### Set-up database ###
