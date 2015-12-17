@@ -29,7 +29,7 @@ def start_cpm():
     db_connection = db.database_start()
     cursor = db_connection.cursor()
 
-    # Clean DBs
+    # Clean tables
     db.table_clear(['peerswithmismatches', 'peerswith', 'nopeers', 'unknownpeers', 'notref', 'cp_connectivity', 'nsastopologies', 'peersroles'], cursor)
 
     domain_peers = cpmf.peersWith(domains_nsa)

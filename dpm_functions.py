@@ -7,12 +7,11 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 
 from collections import defaultdict
 import database as db
-import threading
-from general_functions import ping
 from general_functions import remote_ping
 import time
 import os
 import paramiko
+from general_functions import get_content
 
 isAlias_type = "http://schemas.ogf.org/nml/2013/05/base#isAlias"
 
@@ -21,13 +20,17 @@ def add_switchports(topology, switch, switchtype, labeltype, encoding, cursor):
     if switchtype == 'default' or switchtype == 'wildcard':
         # print ("switch default or wildcard")
         # Add all ports -> not yet checking for labeltype and encoding
-        for relation in topology[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
-            if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
-                for portgroup in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}PortGroup'):
-                    if switch != '':
-                        db.add_switchports(topology.attrib['id'], switch.attrib['id'], portgroup.attrib['id'], cursor)
-                    else:
-                        db.add_switchports(topology.attrib['id'], switch, portgroup.attrib['id'], cursor)
+
+        content = get_content(topology)
+
+        if content is not None:
+            for relation in content.findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
+                if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
+                    for portgroup in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}PortGroup'):
+                        if switch != '':
+                            db.add_switchports(topology.attrib['id'], switch.attrib['id'], portgroup.attrib['id'], cursor)
+                        else:
+                            db.add_switchports(topology.attrib['id'], switch, portgroup.attrib['id'], cursor)
     else:
         # print ("normal switch")
         # Add ports in the switch definition
@@ -46,37 +49,41 @@ def switch(domains_topology, cursor):
 
     for topology in domains_topology:
         has_service = 0
-        for relation in topology[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
-            if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasService":
-                has_service = 1
 
-                if relation[0].attrib['labelSwapping'] == 'true':
-                    label_swapping = 'Yes'
-                else:
-                    label_swapping = 'No'
+        content = get_content(topology)
 
-                try:
-                    encoding = relation[0].attrib['encoding']
-                except KeyError:
-                    encoding = default_encoding
+        if content is not None:
+            for relation in content.findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
+                if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasService":
+                    has_service = 1
 
-                try:
-                    labeltype = relation[0].attrib['labelType']
-                except KeyError:
-                    labeltype = default_labeltype
+                    if relation[0].attrib['labelSwapping'] == 'true':
+                        label_swapping = 'Yes'
+                    else:
+                        label_swapping = 'No'
 
-                relation_port = relation[0].find('{http://schemas.ogf.org/nml/2013/05/base#}Relation')
+                    try:
+                        encoding = relation[0].attrib['encoding']
+                    except KeyError:
+                        encoding = default_encoding
 
-                if relation_port:
-                    if relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
-                        switchtype = 'Standard'
+                    try:
+                        labeltype = relation[0].attrib['labelType']
+                    except KeyError:
+                        labeltype = default_labeltype
+
+                    relation_port = relation[0].find('{http://schemas.ogf.org/nml/2013/05/base#}Relation')
+
+                    if relation_port:
+                        if relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation_port.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
+                            switchtype = 'Standard'
+                        else:
+                            switchtype = 'Wildcard'
                     else:
                         switchtype = 'Wildcard'
-                else:
-                    switchtype = 'Wildcard'
 
-                db.add_switch(topology.attrib['id'], relation[0].attrib['id'], label_swapping, labeltype, switchtype, encoding, cursor)
-                add_switchports(topology, relation[0], switchtype, labeltype, encoding, cursor)
+                    db.add_switch(topology.attrib['id'], relation[0].attrib['id'], label_swapping, labeltype, switchtype, encoding, cursor)
+                    add_switchports(topology, relation[0], switchtype, labeltype, encoding, cursor)
 
         if has_service == 0:
             # Has no switching service defined -> defaults apply
@@ -117,8 +124,6 @@ def splitAndFind(domains_topology, port, num, cursor):
     if len(domain_list) == 0:
         # The topology does not exist
         db.add_unknowntopology(topology, cursor)
-        print "len(domain_list)"
-        print topology
         # domain_list.append('')
         domain_list.append(topology)
         return domain_list
@@ -161,19 +166,22 @@ def getAlias(domains_topology):
         alias = []
         # curr_domain = ''
 
-        for relation in domain[2][0].findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
+        content = get_content(domain)
 
-            if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
+        if content is not None:
+            for relation in content.findall('{http://schemas.ogf.org/nml/2013/05/base#}Relation'):
 
-                for portgroup in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}PortGroup'):
-                    # curr_domain = domainFromPort(portgroup.attrib['id'])
-                    try:
-                        if str(portgroup[1].attrib).find('isAlias'):
-                            # alias.append([portgroup.attrib['id'], domainFromPort(portgroup[1][0].attrib['id']), portgroup[1][0].attrib['id'], portgroup[0].text])
-                            alias.append([portgroup.attrib['id'], portgroup[1][0].attrib['id'], portgroup[0].text])
-                            num_alias += 1
-                    except IndexError:
-                        pass
+                if relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasInboundPort" or relation.attrib['type'] == "http://schemas.ogf.org/nml/2013/05/base#hasOutboundPort":
+
+                    for portgroup in relation.findall('{http://schemas.ogf.org/nml/2013/05/base#}PortGroup'):
+                        # curr_domain = domainFromPort(portgroup.attrib['id'])
+                        try:
+                            if str(portgroup[1].attrib).find('isAlias'):
+                                # alias.append([portgroup.attrib['id'], domainFromPort(portgroup[1][0].attrib['id']), portgroup[1][0].attrib['id'], portgroup[0].text])
+                                alias.append([portgroup.attrib['id'], portgroup[1][0].attrib['id'], portgroup[0].text])
+                                num_alias += 1
+                        except IndexError:
+                            pass
 
         # Add to structure
         if alias:
@@ -182,8 +190,8 @@ def getAlias(domains_topology):
             # print alias
             # print "\n\n"
 
-    print num_domains
-    print num_alias
+    print "Get Alias Number of Domains: " + str(num_domains)
+    print "Get Alias Number of alias: " + str(num_alias)
 
     return domain_ports
 
@@ -239,8 +247,8 @@ def isAlias(domains_topology, cursor):
                 if dst_vlans != 1:
 
                     db.add_isAliasVlan(domain, alias[0], domainFromPort(domain_ports, alias[1]), alias[1], alias[2], dst_vlans, cursor)
-    print num_domains
-    print num_alias
+    print "Is Alias Number of Domains: " + str(num_domains)
+    print "Is Alias Number of alias: " + str(num_alias)
 
 
 def topologyNsaMatch(domains_nsa, domains_topology, cursor):

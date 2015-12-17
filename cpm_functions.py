@@ -7,26 +7,30 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 
 from collections import defaultdict
 import database as db
-import os
 from general_functions import ping
+from general_functions import get_content
 
 
 def peersWith(domains_nsa):
     domain_peers = defaultdict(list)
 
     for domain in domains_nsa:
-        # print '\nNSA: ' + domain[0].text
-        for peers in domain.iter('peersWith'):
-            domain_peers[domain[0].text].append(peers.text)
-            # print 'Peerswith: ' + peers.text
+        content = get_content(domain)
+        if content is not None:
+            for peers in content.iter('peersWith'):
+                domain_peers[domain[0].text].append(peers.text)
+                # print 'Peerswith: ' + peers.text
     return domain_peers
 
 
 def noPeersWith(domains_nsa, cursor):
     for domain in domains_nsa:
-        if not domain[2][0].findall('peersWith'):
-            # print domain[0].text + ' does not have peers'
-            db.add_nopeers(domain[0].text, cursor)
+        content = get_content(domain)
+
+        if content is not None:
+            if not content.findall('peersWith'):
+                # print domain[0].text + ' does not have peers'
+                db.add_nopeers(domain[0].text, cursor)
 
 
 def peersWithMismatches(domain_peers, cursor):
@@ -77,16 +81,19 @@ def cp_connectivity(domains_nsa, cursor):
     interfaces = ['application/vnd.ogf.nsi.cs.v2.provider+soap']
 
     for domain in domains_nsa:
-        print domain[0].text
         result = ''
-        for interface in domain.iter('interface'):
-            if interface[0].text in interfaces:
-                # print 'interface: ' + interface[0].text + ' translated to ' + interface[1].text.split(':')[1].split('/')[2]
-                result = ping(interface[1].text.split(':')[1].split('/')[2])
-                break
+
+        content = get_content(domain)
+
+        if content is not None:
+            for interface in content.iter('interface'):
+                if interface[0].text in interfaces:
+                    # print 'interface: ' + interface[0].text + ' translated to ' + interface[1].text.split(':')[1].split('/')[2]
+                    result = ping(interface[1].text.split(':')[1].split('/')[2])
+                    break
 
         if result == '':
-            # print "Error! No suitable interface was found for domain " + domain[0].text
+            print "Warning! No suitable interface was found for domain " + domain[0].text
             result = 2
 
         db.cp_connectivity(domain[0].text, result, cursor)
@@ -101,14 +108,17 @@ def nsasTopologiesMatch(domains_nsa, domains_topology, cursor):
 
     # Get topologies for each domain
     for domain in domains_nsa:
-        for topologies in domain.iter('networkId'):
-            nsastopologies[domain[0].text].append(topologies.text)
+        content = get_content(domain)
+
+        if content is not None:
+            for topologies in content.iter('networkId'):
+                nsastopologies[domain[0].text].append(topologies.text)
 
     # Get NSA for each topology
     for topology in domains_topology:
         topologiesnsas[topology.attrib['id']].append(topology[0].text)
 
-    #Match NSAs with topologies
+    # Match NSAs with topologies
     for nsa, topologies in nsastopologies.items():
         for topology in topologies:
             if nsa in topologiesnsas[topology]:
@@ -119,6 +129,9 @@ def nsasTopologiesMatch(domains_nsa, domains_topology, cursor):
 
 def peersroles(domains_nsa, cursor):
     for domain in domains_nsa:
-        for feature in domain[2][0].findall('feature'):
-            if feature.attrib['type'] == "vnd.ogf.nsi.cs.v2.role.uPA" or feature.attrib['type'] == "vnd.ogf.nsi.cs.v2.role.aggregator":
-                db.add_peersroles(domain[0].text, feature.attrib['type'], cursor)
+        content = get_content(domain)
+
+        if content is not None:
+            for feature in content.findall('feature'):
+                if feature.attrib['type'] == "vnd.ogf.nsi.cs.v2.role.uPA" or feature.attrib['type'] == "vnd.ogf.nsi.cs.v2.role.aggregator":
+                    db.add_peersroles(domain[0].text, feature.attrib['type'], cursor)

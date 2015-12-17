@@ -38,18 +38,6 @@ class Dashboard:
             refresh = float(config.get('refresh'))
             logger.debug("Refresh time = " + str(refresh) + " minutes")
 
-            # try:
-            #     if path_testing_refresh <= 0:
-            #         path_testing_refresh = float(config.get('path_testing_refresh'))
-            #         path_test = 1
-            #         print "path_test on"
-            #     else:
-            #         path_test = 0
-            #         print "path_test off"
-            # except UnboundLocalError:
-            #     path_testing_refresh = float(config.get('path_testing_refresh'))
-            #     path_test = 1
-
             path_test = 1
 
             logger.info("Starting control plane checks")
@@ -58,12 +46,6 @@ class Dashboard:
             dpm.start_dpm("stps.conf", source_topology, path_test)
 
             time.sleep(refresh * 60)
-            # path_testing_refresh -= refresh * 60
-
-            # logger.debug("Debug message")
-            # logger.info("Info message")
-            # logger.warn("Warning message")
-            # logger.error("Error message")
 
 
 app = Dashboard()

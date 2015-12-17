@@ -33,7 +33,7 @@ def start_dpm(stps_file, source_topology, path_test):
         db.table_clear(['dp_connectivity'], cursor)
         dpmf.path_test(stps_file, source_topology, cursor)
 
-    # Clean DB
+    # Clean tables
     db.table_clear(['isalias', 'isaliasvlans', 'isaliasmatch', 'switch', 'unknowntopologies', 'topologynsa', 'switchports'], cursor)
 
     # Find isAlias mismatches

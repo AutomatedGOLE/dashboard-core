@@ -7,6 +7,9 @@ __author__ = 'Daniel Romão - d.f.romao@uva.nl'
 
 import os
 import paramiko
+import base64
+import zlib
+import xml.etree.cElementTree as ET
 
 
 def get_domains(dds_file, domain_type):
@@ -48,3 +51,25 @@ def remote_ping(host_from, host_to):
 
     ssh.close()
     return 0
+
+
+def get_content(domain):
+
+    # Check if it has signature and if content has actually any content
+    if domain[2].tag == "signature":
+        if domain[3].text is not None:
+            decoded = base64.b64decode(domain[3].text)
+        else:
+            return None
+    elif domain[2].tag == "content":
+        if domain[2].text is not None:
+            decoded = base64.b64decode(domain[2].text)
+        else:
+            return None
+    else:
+        return None
+
+    d = zlib.decompressobj(16+zlib.MAX_WBITS)
+    decompressed = d.decompress(decoded)
+
+    return ET.XML(decompressed)
