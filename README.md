@@ -2,13 +2,14 @@
 
 ## Install instructions ##
 
-**Tested on Debian Jessie**
+**Debian Jessie**
 
 ### Install dependencies ###
 ```
 apt-get install mariadb-server python-pip python-mysqldb
 mysql_secure_installation
 pip install paramiko
+pip install python-daemon
 mkdir /var/run/dashboard/
 ```
 **Note: The dashboard needs write access to the directory created above**
